@@ -8,15 +8,6 @@
     android:background="@drawable/gradient_list"
     android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/hello"
-
-        android:textColor="@color/black" />
-
-
     <!-- Compose view provided by jetpack compose -->
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/compose_view"

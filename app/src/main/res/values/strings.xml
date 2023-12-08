@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">CinemaView</string>
+    <string name="compose_view">Hello!</string>
+    <string name="hello">Любите кино!</string>
+    <string name="image1">img1</string>
+    <string name="image2">img2</string>
+    <string name="title_activity_st">StActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 </resources>
