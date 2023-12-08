@@ -1,5 +1,6 @@
 package com.example.cinemaview
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.drawable.AnimationDrawable
 import androidx.appcompat.app.AppCompatActivity
@@ -59,6 +60,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 
 class MainActivity : AppCompatActivity() {
@@ -66,8 +68,13 @@ class MainActivity : AppCompatActivity() {
 //    lateinit var openButton: Button
 
     val brush = Brush.linearGradient(colors = listOf(Color.Blue, Color.Green) )
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
+        Thread.sleep(400)
+
+
         setContentView(R.layout.activity_main)
 
         val constraintLayout = findViewById(R.id.layout) as LinearLayout
@@ -88,6 +95,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
     @Composable
     fun Greeting(text: String) {
 
@@ -125,9 +133,13 @@ class MainActivity : AppCompatActivity() {
         ){
 
         }
+
+
         ElevatedButton(
             onClick = { onClick()
-                Toast.makeText(this, "Добро пожаловать в мир кино!", Toast.LENGTH_LONG).show()} ,
+                val intent = Intent(this, StartActivity::class.java)
+                startActivity(intent)
+                Toast.makeText(this, "Добро пожаловать в мир кино!", Toast.LENGTH_SHORT).show()} ,
             modifier = Modifier
                 .width(150.dp)
                 .height(50.dp)
@@ -214,5 +226,6 @@ class MainActivity : AppCompatActivity() {
             )
         }
     }
+
 
 }

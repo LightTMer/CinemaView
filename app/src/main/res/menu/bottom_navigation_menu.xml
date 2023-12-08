@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id= "@+id/menu"
+        android:title="Menu"
+        android:icon = "@drawable/menu"/>
+
+    <item android:id= "@+id/movie"
+        android:title="Movie"
+        android:icon = "@drawable/movie"/>
+
+    <item android:id= "@+id/profile"
+        android:title="Profile"
+        android:icon = "@drawable/person"/>
+
+</menu>
