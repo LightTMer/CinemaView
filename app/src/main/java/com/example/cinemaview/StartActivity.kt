@@ -63,6 +63,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 class StartActivity : AppCompatActivity() {
     private lateinit var appDatabase: AppDatabase
     lateinit var composeView: ComposeView
+
     @SuppressLint("MissingInflatedId")
 
 
@@ -74,60 +75,54 @@ class StartActivity : AppCompatActivity() {
             applicationContext,
             AppDatabase::class.java, "app-database"
         ).build()
-        checkLocalData()
-        composeView = findViewById(R.id.compose_view)
-        composeView.setContent {
-            Box(
-                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-            ) {
-
-//                StartText()
-                MovieDetailsScreen()
-
-             StartButton()
-
-            }
-        }
-        data class Movie(
-            val title: String,
-            val year: Int,
-            val description: String,
-            val rating: Float,
-            val posterResId: Int
-        )
-
-    }
-
-    private fun fetchDataFromServer() {
-        val okHttpClient = OkHttpClient.Builder()
-            .addInterceptor { chain ->
-                val request = chain.request()
-                    .newBuilder()
-                    .addHeader("Accept-Encoding", "gzip")
-                    .build()
-                chain.proceed(request)
-            }
-            .build()
-
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://159.223.230.93:5000/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(okHttpClient)
-            .build()
-
-        val movieService = retrofit.create(MovieService::class.java)
-
         GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val response = movieService.getMovies().execute()
-                if (response.isSuccessful) {
-                    val movies = response.body() ?: emptyList()
-                    saveDataToLocalDatabase(movies)
-                } else {
+            var movies: List<MovieEntity> = appDatabase.movieDao().getAllMovies()
+            if (!movies.isNotEmpty()) {
+                val okHttpClient = OkHttpClient.Builder()
+                    .addInterceptor { chain ->
+                        val request = chain.request()
+                            .newBuilder()
+                            .addHeader("Accept-Encoding", "gzip")
+                            .build()
+                        chain.proceed(request)
+                    }
+                    .build()
+
+                val retrofit = Retrofit.Builder()
+                    .baseUrl("http://159.223.230.93:5000/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .client(okHttpClient)
+                    .build()
+
+                val movieService = retrofit.create(MovieService::class.java)
+
+
+                try {
+                    val response = movieService.getMovies().execute()
+                    if (response.isSuccessful) {
+                        val films = response.body() ?: emptyList()
+                        appDatabase.movieDao().insertMovies(films)
+                        movies = appDatabase.movieDao().getAllMovies()
+                    } else {
+                        showError()
+                    }
+                } catch (e: Exception) {
                     showError()
                 }
-            } catch (e: Exception) {
-                showError()
+            }
+            runOnUiThread {
+                composeView = findViewById(R.id.compose_view)
+                composeView.setContent {
+                    Box(
+                        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                    ) {
+
+                        MovieDetailsScreen(movies = movies)
+
+                        StartButton()
+
+                    }
+                }
             }
         }
     }
@@ -139,22 +134,8 @@ class StartActivity : AppCompatActivity() {
         }
     }
 
-    private fun saveDataToLocalDatabase(movies: List<MovieEntity>) {
-        GlobalScope.launch(Dispatchers.IO) {
-            appDatabase.movieDao().insertMovies(movies)
-        }
-    }
 
-    private fun checkLocalData() {
-        GlobalScope.launch(Dispatchers.IO) {
-            val movies: List<MovieEntity> = appDatabase.movieDao().getAllMovies()
-            withContext(Dispatchers.Main) {
-                if (!movies.isNotEmpty()) {
-                    fetchDataFromServer()
-                }
-            }
-        }
-    }
+
     @Composable
     fun ImageList(images: List<String>) {
         LazyColumn {
@@ -163,19 +144,22 @@ class StartActivity : AppCompatActivity() {
             }
         }
     }
+
     @Composable
     fun ImageItem(imageUrl: String) {
-        val painter: Painter = painterResource(id = R.drawable.alexxx) // Placeholder image while loading
+        val painter: Painter =
+            painterResource(id = R.drawable.alexxx) // Placeholder image while loading
 
-         Image(
-             painter =painter,
+        Image(
+            painter = painter,
 //             painter = rememberImagePainter(data = imageUrl),
-             contentDescription = null,
-             modifier = Modifier
-                 .fillMaxWidth()
-                 .height(200.dp)
-         )
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+        )
     }
+
     @Composable
     fun ImageLoader(item: String) {
 
@@ -188,17 +172,10 @@ class StartActivity : AppCompatActivity() {
             modifier = Modifier.size(75.dp)
         )
     }
-
-    @SuppressLint("CoroutineCreationDuringComposition")
     @Composable
-    fun MovieDetailsScreen() {
-        var movies: List<MovieEntity> = listOf()
-        GlobalScope.launch(Dispatchers.IO) {
-            movies = appDatabase.movieDao().getAllMovies()
-        }
+    fun MovieDetailsScreen(movies: List<MovieEntity>) {
         val configuration = LocalConfiguration.current
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize()
@@ -223,10 +200,14 @@ class StartActivity : AppCompatActivity() {
                             .padding(horizontal = 16.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Год: ${movies[0].releaseDate} ", modifier = Modifier
-                            .offset(x = 50.dp, y= 0.dp))
-                        Text(text = "Рейтинг: ${movies[0].rating}", modifier = Modifier
-                            .offset(x = -50.dp, y= 0.dp))
+                        Text(
+                            text = "Год: ${movies[0].releaseDate} ", modifier = Modifier
+                                .offset(x = 50.dp, y = 0.dp)
+                        )
+                        Text(
+                            text = "Рейтинг: ${movies[0].rating}", modifier = Modifier
+                                .offset(x = -50.dp, y = 0.dp)
+                        )
                     }
                 }
 
@@ -244,8 +225,7 @@ class StartActivity : AppCompatActivity() {
                     )
                 }
             }
-        }
-        else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        } else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 
             Column(
                 modifier = Modifier.fillMaxSize()
@@ -280,7 +260,7 @@ class StartActivity : AppCompatActivity() {
                             text = "вторая страница",
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .offset(x = 5.dp, y=-100.dp )
+                                .offset(x = 5.dp, y = -100.dp)
 //                                .padding(16.dp)
                         )
 
@@ -293,7 +273,7 @@ class StartActivity : AppCompatActivity() {
             }
             ElevatedButton(
                 onClick = {
-                } ,
+                },
                 modifier = Modifier
                     .width(150.dp)
                     .height(50.dp)
@@ -309,7 +289,7 @@ class StartActivity : AppCompatActivity() {
             )
             ElevatedButton(
                 onClick = {
-                } ,
+                },
                 modifier = Modifier
                     .width(150.dp)
                     .height(50.dp)
@@ -337,48 +317,51 @@ class StartActivity : AppCompatActivity() {
 
         }
     }
+
     @Composable
     fun StartButton() {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
-        ){Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp))
-        {
-            ElevatedButton(
-                onClick = {
-                } ,
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(50.dp)
-                    .offset(x = 25.dp, y = 625.dp)
-                    .width(200.dp),
-                content = {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "Влево"
-                    )
-                }
-
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             )
-            ElevatedButton(
-                onClick = {
+            {
+                ElevatedButton(
+                    onClick = {
+                    },
+                    modifier = Modifier
+                        .width(150.dp)
+                        .height(50.dp)
+                        .offset(x = 25.dp, y = 625.dp)
+                        .width(200.dp),
+                    content = {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowLeft,
+                            contentDescription = "Влево"
+                        )
+                    }
 
-                } ,
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(50.dp)
-                    .offset(x = 50.dp, y = 625.dp)
-                    .width(200.dp),
-                content = {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "Вправо"
-                    )
-                }
+                )
+                ElevatedButton(
+                    onClick = {
 
-            )
-        }
+                    },
+                    modifier = Modifier
+                        .width(150.dp)
+                        .height(50.dp)
+                        .offset(x = 50.dp, y = 625.dp)
+                        .width(200.dp),
+                    content = {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = "Вправо"
+                        )
+                    }
+
+                )
+            }
         }
         ElevatedButton(
             onClick = { onBackPressed() },
