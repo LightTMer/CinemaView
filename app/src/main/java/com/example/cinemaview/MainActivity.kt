@@ -2,6 +2,7 @@ package com.example.cinemaview
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.drawable.AnimationDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.pointer.PointerIcon.Companion.Text
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role.Companion.Button
 import androidx.compose.ui.semantics.SemanticsProperties.Text
@@ -98,16 +100,13 @@ class MainActivity : AppCompatActivity() {
 
     @Composable
     fun Greeting(text: String) {
-
+        val configuration = LocalConfiguration.current
+        if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
         Text(
             buildAnnotatedString {
-
                 withStyle(
-
                     SpanStyle(
                         brush = brush, alpha = .5f, fontSize = 40.sp,
-
-
                     )
                 ) {
 
@@ -122,19 +121,40 @@ class MainActivity : AppCompatActivity() {
                 }
             },
 //            modifier = Modifier.clip(CircleShape).background(color = Color.White)
+            )}
+        else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+        {
+            Text(
 
-            )
+                buildAnnotatedString {
+                    withStyle(
+                        SpanStyle(
+                            brush = brush, alpha = .5f, fontSize = 40.sp,
+                            )
+                    ) {
+                        append("$text")
+                    }
+                    withStyle(
+                        SpanStyle(
+                            brush = brush, alpha = 1f, fontSize = 40.sp
+                        )
+                    ) {
+                        append("\uD83C\uDFAC")
+                    }
+                },modifier = Modifier.offset(x = 0.dp, y = -75.dp))
+        }
 
     }
     @Composable
     fun StartButton(onClick: () -> Unit) {
+
+        val configuration = LocalConfiguration.current
+        if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
         Box(
             modifier = Modifier.fillMaxSize()
         ){
 
         }
-
-
         ElevatedButton(
             onClick = { onClick()
                 val intent = Intent(this, StartActivity::class.java)
@@ -179,53 +199,56 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+        else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE){
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ){
 
-    @Composable
-    fun MyScreenContent() {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier
-                        .size(100.dp)
-                        .background(Color.Magenta)
-                ) {
-                    Text(text = "Button 1")
-                }
-                Button(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier
-                        .size(100.dp)
-                        .background(Color.Magenta)
-                ) {
-                    Text(text = "Button 2")
-                }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            ElevatedButton(
+                onClick = { onClick()
+                    val intent = Intent(this, StartActivity::class.java)
+                    startActivity(intent)
+                    Toast.makeText(this, "Добро пожаловать в мир кино!", Toast.LENGTH_SHORT).show()} ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 0.dp, y = -10.dp)
+                    .width(200.dp)
+
             ) {
-//                Image(
-//                    painter = painterResource(id = R.drawable.my_image),
-//                    contentDescription = "My Image",
-//                    modifier = Modifier.size(100.dp)
-//                )
-                Text(
-                    text = "Some text",
-                    modifier = Modifier.padding(start = 8.dp)
-                )
+                Text("Начать")
             }
-            Text(
-                text = "Short description",
-                modifier = Modifier.fillMaxWidth()
-            )
+            ElevatedButton(
+                onClick = { onClick()
+                    val intent = Intent(this, AboutApp::class.java)
+                    startActivity(intent)
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 0.dp, y = 50.dp)
+                    .width(200.dp)
+
+            ) {
+                Text("О приложении")
+            }
+            ElevatedButton(
+                onClick = { onClick()
+                    finish()
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 0.dp, y = 110.dp)
+                    .width(200.dp)
+
+            ) {
+                Text("Выйти")
+            }
+
         }
     }
-
-
 }
+
+

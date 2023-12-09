@@ -1,6 +1,7 @@
 package com.example.cinemaview
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 import android.graphics.drawable.AnimationDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
@@ -59,6 +61,8 @@ class AboutApp : AppCompatActivity() {
 
     @Composable
     fun InformationScreen() {
+        val configuration = LocalConfiguration.current
+        if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -86,7 +90,6 @@ class AboutApp : AppCompatActivity() {
                             .size(140.dp)
                             .clip(CircleShape)
 //                            .offset(x=5.dp)
-
                     )
             }
             Row(
@@ -110,7 +113,6 @@ class AboutApp : AppCompatActivity() {
                     text = "Потехин Илья"
                 )
             }
-
             Text(modifier = Modifier.padding(vertical = 30.dp), text ="CinemaView - это приложение, которое представляет собой сборник информации о разных фильмах, c их описанием и мировым рейтингом. По сути, это своего рода энциклопедия в мире кино!")
             ElevatedButton(
 
@@ -134,6 +136,75 @@ class AboutApp : AppCompatActivity() {
             ) {
                 Text("Назад")
             }
+        }
+    }
+        else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE){
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Наша команда")
+
+                Row(
+                    modifier = Modifier.padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly // Changed from Center to SpaceEvenly
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.alexxx),
+                        contentDescription = "Image 1",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.ilyaa),
+                        contentDescription = "Image 2",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                    )
+                }
+                Row(
+                    modifier = Modifier.padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly // Changed from Center to SpaceEvenly
+                ) {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 5.dp),
+                        text = "Ершов Александр"
+                    )
+                    Text(
+                        modifier = Modifier.padding(horizontal = 5.dp),
+                        text = "Потехин Илья"
+                    )
+                }
+                Text(modifier = Modifier.padding(vertical = 3.dp), text ="CinemaView - это приложение, которое представляет собой сборник информации о разных фильмах, c их описанием и мировым рейтингом. По сути, это своего рода энциклопедия в мире кино!")
+                ElevatedButton(
+                    onClick = { },
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(40.dp)
+                        .offset(x= 0.dp , y= 0.dp)
+                ) {
+                    Text("Перейти на Github")
+                }
+                ElevatedButton(
+                    onClick = {onBackPressed()
+                    } ,
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(40.dp)
+                        .offset(x = 0.dp, y =5.dp)
+
+                ){ Text("Назад")}
+
+
+            }
+
+
+
         }
     }
 }

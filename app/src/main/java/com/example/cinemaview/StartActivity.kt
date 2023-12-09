@@ -3,6 +3,7 @@ package com.example.cinemaview
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.compose.foundation.Image
@@ -40,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -64,6 +66,7 @@ class StartActivity : AppCompatActivity() {
 
 //                StartText()
                 MovieDetailsScreen()
+                MovieDetailsScreen2()
 
              StartButton()
 
@@ -112,62 +115,72 @@ class StartActivity : AppCompatActivity() {
             modifier = Modifier.size(75.dp)
         )
     }
+
     @Composable
     fun MovieDetailsScreen() {
 //        В mainactivity я прописал класс data Movie, его также можешь использовать для удобства вывода информации, как делали в лабах ранее
 //        movie: Movie - значение передаем в функцию
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            item {
-                Text(
-//                    text = movie.title,
-                    text = "Название",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    color = Color.Black,
-                    fontSize = 24.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
 
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+        val configuration = LocalConfiguration.current
+        if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                item {
+                    Text(
+//                    text = movie.title,
+                        text = "Название",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        color = Color.Black,
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
 //                    Text(text = "Year: ${movie.year}")
 //                    Text(text = "Rating: ${movie.rating}")
-                    Text(text = "Год")
-                    Text(text = "Рейтинг:")
+                        Text(text = "Год: ", modifier = Modifier
+                            .offset(x = 50.dp, y= 0.dp))
+                        Text(text = "Рейтинг:", modifier = Modifier
+                            .offset(x = -50.dp, y= 0.dp))
+                    }
                 }
-            }
 
 
-            //Вместо этого блока, нужно подставить функцию для вывода картинки по ссылке ( ImageList или ImageLoader тут на выбор для твоего удобства реализации)
-            item {
-                Image(
+                //Вместо этого блока, нужно подставить функцию для вывода картинки по ссылке ( ImageList или ImageLoader тут на выбор для твоего удобства реализации)
+                item {
+                    Image(
 //                    painter = painterResource(id = movie.posterResId),
-                    painter = painterResource(id = R.drawable.alexxx),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentScale = ContentScale.Crop
-                )
-            }
+                        painter = painterResource(id = R.drawable.alexxx),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .offset(x = 70.dp, y= 0.dp)
+                            .width(250.dp)
+                            .height(300.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
 
-            item {
-                Text(
+                item {
+                    Text(
 //                    text = movie.description,
-                    text = "описание",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
+                        text = "описаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописание",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
             }
         }
     }
@@ -226,8 +239,101 @@ class StartActivity : AppCompatActivity() {
         }
     }
 
+    @Composable
+    fun MovieDetailsScreen2() {
+        val configuration = LocalConfiguration.current
+        if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 
 
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+//                    painter = painterResource(id = movie.posterResId),
+                        painter = painterResource(id = R.drawable.alexxx),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .width(150.dp)
+                            .height(200.dp)
+                            .padding(end = 16.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                    Column {
+                        Text(
+//                        text = movie.title,
+                            text = "Название",
+                            modifier = Modifier.padding(bottom = 120.dp),
+                            color = Color.Black,
+                            fontSize = 24.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+//                text = movie.description,
+                            text = "описаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописание",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .offset(x = 5.dp, y=-100.dp )
+//                                .padding(16.dp)
+                        )
 
-}
+                    }
+                }
+                Text(text = "Year: movie.year")
+                Text(text = "Rating:movie.rating")
+
+
+            }
+            ElevatedButton(
+                onClick = {
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = -200.dp, y = 150.dp)
+                    .width(200.dp),
+                content = {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "О приложении"
+                    )
+                }
+
+            )
+            ElevatedButton(
+                onClick = {
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 200.dp, y = 150.dp)
+                    .width(200.dp),
+                content = {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "О приложении"
+                    )
+                }
+
+            )
+            ElevatedButton(
+                onClick = { onBackPressed() },
+                modifier = Modifier
+
+                    .height(50.dp)
+                    .offset(x = 0.dp, y = 150.dp)
+                    .width(200.dp)
+
+            ) {
+                androidx.compose.material3.Text("Назад")
+            }
+
+        }
+
+    }}
 
