@@ -6,67 +6,45 @@ import android.content.res.Configuration
 import android.graphics.drawable.AnimationDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.foundation.layout.Box
 
-import androidx.compose.foundation.layout.Column
 
-
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Text
 import androidx.compose.ui.unit.sp
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.input.pointer.PointerIcon.Companion.Text
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Button
-import androidx.compose.ui.semantics.SemanticsProperties.Text
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType.Companion.Text
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+
+import androidx.room.Room
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : AppCompatActivity() {
     lateinit var composeView: ComposeView
+    private lateinit var appDatabase: AppDatabase
 //    lateinit var openButton: Button
 
     val brush = Brush.linearGradient(colors = listOf(Color.Blue, Color.Green) )
@@ -78,6 +56,12 @@ class MainActivity : AppCompatActivity() {
 
 
         setContentView(R.layout.activity_main)
+
+        appDatabase = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "app-database"
+        ).build()
+        checkLocalData()
 
         val constraintLayout = findViewById(R.id.layout) as LinearLayout
         val animationDrawable = constraintLayout.background as AnimationDrawable
@@ -93,6 +77,72 @@ class MainActivity : AppCompatActivity() {
                 Greeting("CinemaView")
                 StartButton {
 
+                }
+            }
+        }
+    }
+
+    private fun fetchDataFromServer() {
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                    .newBuilder()
+                    .addHeader("Accept-Encoding", "gzip")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://159.223.230.93:5000/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+
+        val movieService = retrofit.create(MovieService::class.java)
+
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val response = movieService.getMovies().execute()
+                if (response.isSuccessful) {
+                    val movies = response.body() ?: emptyList()
+                    saveDataToLocalDatabase(movies)
+                    withContext(Dispatchers.Main) {
+                        displayMovies(movies)
+                    }
+                } else {
+                    showError()
+                }
+            } catch (e: Exception) {
+                showError()
+            }
+        }
+    }
+
+    private fun displayMovies(movies: List<MovieEntity>) {
+        // Код отображения данных
+    }
+
+    private fun showError() {
+        runOnUiThread {
+            Toast.makeText(this, "Не удалось загрузить", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun saveDataToLocalDatabase(movies: List<MovieEntity>) {
+        GlobalScope.launch(Dispatchers.IO) {
+            appDatabase.movieDao().insertMovies(movies)
+        }
+    }
+
+    private fun checkLocalData() {
+        GlobalScope.launch(Dispatchers.IO) {
+            val movies: List<MovieEntity> = appDatabase.movieDao().getAllMovies()
+            withContext(Dispatchers.Main) {
+                if (movies.isNotEmpty()) {
+                    displayMovies(movies)
+                } else {
+                    fetchDataFromServer()
                 }
             }
         }
