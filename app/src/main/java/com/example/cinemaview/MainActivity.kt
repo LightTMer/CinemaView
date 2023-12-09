@@ -32,19 +32,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
-import androidx.room.Room
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-
 
 class MainActivity : AppCompatActivity() {
     lateinit var composeView: ComposeView
-    private lateinit var appDatabase: AppDatabase
 //    lateinit var openButton: Button
 
     val brush = Brush.linearGradient(colors = listOf(Color.Blue, Color.Green) )
@@ -56,12 +46,6 @@ class MainActivity : AppCompatActivity() {
 
 
         setContentView(R.layout.activity_main)
-
-        appDatabase = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java, "app-database"
-        ).build()
-        checkLocalData()
 
         val constraintLayout = findViewById(R.id.layout) as LinearLayout
         val animationDrawable = constraintLayout.background as AnimationDrawable
@@ -82,71 +66,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchDataFromServer() {
-        val okHttpClient = OkHttpClient.Builder()
-            .addInterceptor { chain ->
-                val request = chain.request()
-                    .newBuilder()
-                    .addHeader("Accept-Encoding", "gzip")
-                    .build()
-                chain.proceed(request)
-            }
-            .build()
 
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://159.223.230.93:5000/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(okHttpClient)
-            .build()
-
-        val movieService = retrofit.create(MovieService::class.java)
-
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val response = movieService.getMovies().execute()
-                if (response.isSuccessful) {
-                    val movies = response.body() ?: emptyList()
-                    saveDataToLocalDatabase(movies)
-                    withContext(Dispatchers.Main) {
-                        displayMovies(movies)
-                    }
-                } else {
-                    showError()
-                }
-            } catch (e: Exception) {
-                showError()
-            }
-        }
-    }
-
-    private fun displayMovies(movies: List<MovieEntity>) {
-        // Код отображения данных
-    }
-
-    private fun showError() {
-        runOnUiThread {
-            Toast.makeText(this, "Не удалось загрузить", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun saveDataToLocalDatabase(movies: List<MovieEntity>) {
-        GlobalScope.launch(Dispatchers.IO) {
-            appDatabase.movieDao().insertMovies(movies)
-        }
-    }
-
-    private fun checkLocalData() {
-        GlobalScope.launch(Dispatchers.IO) {
-            val movies: List<MovieEntity> = appDatabase.movieDao().getAllMovies()
-            withContext(Dispatchers.Main) {
-                if (movies.isNotEmpty()) {
-                    displayMovies(movies)
-                } else {
-                    fetchDataFromServer()
-                }
-            }
-        }
-    }
 
     @Composable
     fun Greeting(text: String) {

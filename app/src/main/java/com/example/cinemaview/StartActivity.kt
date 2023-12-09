@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,8 +49,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 
+import androidx.room.Room
+import coil.imageLoader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
 
 class StartActivity : AppCompatActivity() {
+    private lateinit var appDatabase: AppDatabase
     lateinit var composeView: ComposeView
     @SuppressLint("MissingInflatedId")
 
@@ -58,6 +70,11 @@ class StartActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
 
+        appDatabase = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "app-database"
+        ).build()
+        checkLocalData()
         composeView = findViewById(R.id.compose_view)
         composeView.setContent {
             Box(
@@ -66,7 +83,6 @@ class StartActivity : AppCompatActivity() {
 
 //                StartText()
                 MovieDetailsScreen()
-                MovieDetailsScreen2()
 
              StartButton()
 
@@ -80,6 +96,64 @@ class StartActivity : AppCompatActivity() {
             val posterResId: Int
         )
 
+    }
+
+    private fun fetchDataFromServer() {
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val request = chain.request()
+                    .newBuilder()
+                    .addHeader("Accept-Encoding", "gzip")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://159.223.230.93:5000/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+
+        val movieService = retrofit.create(MovieService::class.java)
+
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val response = movieService.getMovies().execute()
+                if (response.isSuccessful) {
+                    val movies = response.body() ?: emptyList()
+                    saveDataToLocalDatabase(movies)
+                } else {
+                    showError()
+                }
+            } catch (e: Exception) {
+                showError()
+            }
+        }
+    }
+
+
+    private fun showError() {
+        runOnUiThread {
+            Toast.makeText(this, "Не удалось загрузить", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun saveDataToLocalDatabase(movies: List<MovieEntity>) {
+        GlobalScope.launch(Dispatchers.IO) {
+            appDatabase.movieDao().insertMovies(movies)
+        }
+    }
+
+    private fun checkLocalData() {
+        GlobalScope.launch(Dispatchers.IO) {
+            val movies: List<MovieEntity> = appDatabase.movieDao().getAllMovies()
+            withContext(Dispatchers.Main) {
+                if (!movies.isNotEmpty()) {
+                    fetchDataFromServer()
+                }
+            }
+        }
     }
     @Composable
     fun ImageList(images: List<String>) {
@@ -105,8 +179,7 @@ class StartActivity : AppCompatActivity() {
     @Composable
     fun ImageLoader(item: String) {
 
-        val url = "https://www.ebookfrenzy.com/book_examples/car_logos/" + item.
-        substringBefore(" ") + "_logo.png"
+        val url = item
 
         Image(
             painter = rememberImagePainter(url),
@@ -116,11 +189,13 @@ class StartActivity : AppCompatActivity() {
         )
     }
 
+    @SuppressLint("CoroutineCreationDuringComposition")
     @Composable
     fun MovieDetailsScreen() {
-//        В mainactivity я прописал класс data Movie, его также можешь использовать для удобства вывода информации, как делали в лабах ранее
-//        movie: Movie - значение передаем в функцию
-
+        var movies: List<MovieEntity> = listOf()
+        GlobalScope.launch(Dispatchers.IO) {
+            movies = appDatabase.movieDao().getAllMovies()
+        }
         val configuration = LocalConfiguration.current
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
 
@@ -130,8 +205,8 @@ class StartActivity : AppCompatActivity() {
             ) {
                 item {
                     Text(
-//                    text = movie.title,
-                        text = "Название",
+                        text = movies[0].title,
+//                        text = "Название",
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(10.dp),
@@ -148,34 +223,21 @@ class StartActivity : AppCompatActivity() {
                             .padding(horizontal = 16.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-//                    Text(text = "Year: ${movie.year}")
-//                    Text(text = "Rating: ${movie.rating}")
-                        Text(text = "Год: ", modifier = Modifier
+                        Text(text = "Год: ${movies[0].releaseDate} ", modifier = Modifier
                             .offset(x = 50.dp, y= 0.dp))
-                        Text(text = "Рейтинг:", modifier = Modifier
+                        Text(text = "Рейтинг: ${movies[0].rating}", modifier = Modifier
                             .offset(x = -50.dp, y= 0.dp))
                     }
                 }
 
 
-                //Вместо этого блока, нужно подставить функцию для вывода картинки по ссылке ( ImageList или ImageLoader тут на выбор для твоего удобства реализации)
                 item {
-                    Image(
-//                    painter = painterResource(id = movie.posterResId),
-                        painter = painterResource(id = R.drawable.alexxx),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .offset(x = 70.dp, y= 0.dp)
-                            .width(250.dp)
-                            .height(300.dp),
-                        contentScale = ContentScale.Crop
-                    )
+//
                 }
 
                 item {
                     Text(
-//                    text = movie.description,
-                        text = "описаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописание",
+                        text = movies[0].overview,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
@@ -183,67 +245,7 @@ class StartActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-    @Composable
-    fun StartButton() {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ){Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp))
-        {
-            ElevatedButton(
-                onClick = {
-                } ,
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(50.dp)
-                    .offset(x = 25.dp, y = 625.dp)
-                    .width(200.dp),
-                content = {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "О приложении"
-                    )
-                }
-
-            )
-            ElevatedButton(
-                onClick = {
-                } ,
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(50.dp)
-                    .offset(x = 50.dp, y = 625.dp)
-                    .width(200.dp),
-                content = {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "О приложении"
-                    )
-                }
-
-            )
-        }
-        }
-        ElevatedButton(
-            onClick = { onBackPressed() },
-            modifier = Modifier
-
-                .height(50.dp)
-                .offset(x = 0.dp, y = 340.dp)
-                .width(200.dp)
-
-        ) {
-            androidx.compose.material3.Text("Назад")
-        }
-    }
-
-    @Composable
-    fun MovieDetailsScreen2() {
-        val configuration = LocalConfiguration.current
-        if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-
+        else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 
             Column(
                 modifier = Modifier.fillMaxSize()
@@ -275,7 +277,7 @@ class StartActivity : AppCompatActivity() {
                         )
                         Text(
 //                text = movie.description,
-                            text = "описаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописаниеописание",
+                            text = "вторая страница",
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .offset(x = 5.dp, y=-100.dp )
@@ -334,6 +336,61 @@ class StartActivity : AppCompatActivity() {
             }
 
         }
+    }
+    @Composable
+    fun StartButton() {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ){Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp))
+        {
+            ElevatedButton(
+                onClick = {
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 25.dp, y = 625.dp)
+                    .width(200.dp),
+                content = {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "Влево"
+                    )
+                }
 
-    }}
+            )
+            ElevatedButton(
+                onClick = {
+
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 50.dp, y = 625.dp)
+                    .width(200.dp),
+                content = {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Вправо"
+                    )
+                }
+
+            )
+        }
+        }
+        ElevatedButton(
+            onClick = { onBackPressed() },
+            modifier = Modifier
+
+                .height(50.dp)
+                .offset(x = 0.dp, y = 340.dp)
+                .width(200.dp)
+
+        ) {
+            androidx.compose.material3.Text("Назад")
+        }
+    }
+}
 
