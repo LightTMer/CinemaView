@@ -59,7 +59,12 @@ dependencies {
     implementation ("com.google.android.material:material:1.12.0-alpha01")
     implementation("com.google.android.material:material:1.10.0")
 
+
+
+    // Для текста:
+
 //Новое:   val nav_version = "2.7.5"
+
 
     val nav_version = "2.7.5"
 
@@ -90,6 +95,7 @@ dependencies {
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.compose.ui:ui-android:1.5.1")
+    implementation ("io.coil-kt:coil-compose:1.3.2")
 
 //    implementation("androidx.compose.compiler:compiler:1.9.20")
     testImplementation("junit:junit:4.13.2")

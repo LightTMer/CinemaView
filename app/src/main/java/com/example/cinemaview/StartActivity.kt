@@ -2,8 +2,10 @@ package com.example.cinemaview
 
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,16 +18,33 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-
-
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
+
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.rememberImagePainter
 
 
 class StartActivity : AppCompatActivity() {
@@ -43,71 +62,172 @@ class StartActivity : AppCompatActivity() {
                 modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
             ) {
 
+//                StartText()
+                MovieDetailsScreen()
+
              StartButton()
+
             }
         }
+        data class Movie(
+            val title: String,
+            val year: Int,
+            val description: String,
+            val rating: Float,
+            val posterResId: Int
+        )
 
     }
+    @Composable
+    fun ImageList(images: List<String>) {
+        LazyColumn {
+            items(images) { imageUrl ->
+                ImageItem(imageUrl = imageUrl)
+            }
+        }
+    }
+    @Composable
+    fun ImageItem(imageUrl: String) {
+        val painter: Painter = painterResource(id = R.drawable.alexxx) // Placeholder image while loading
 
+         Image(
+             painter =painter,
+//             painter = rememberImagePainter(data = imageUrl),
+             contentDescription = null,
+             modifier = Modifier
+                 .fillMaxWidth()
+                 .height(200.dp)
+         )
+    }
+    @Composable
+    fun ImageLoader(item: String) {
+
+        val url = "https://www.ebookfrenzy.com/book_examples/car_logos/" + item.
+        substringBefore(" ") + "_logo.png"
+
+        Image(
+            painter = rememberImagePainter(url),
+            contentDescription = "car image",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.size(75.dp)
+        )
+    }
+    @Composable
+    fun MovieDetailsScreen() {
+//        В mainactivity я прописал класс data Movie, его также можешь использовать для удобства вывода информации, как делали в лабах ранее
+//        movie: Movie - значение передаем в функцию
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            item {
+                Text(
+//                    text = movie.title,
+                    text = "Название",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    color = Color.Black,
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+//                    Text(text = "Year: ${movie.year}")
+//                    Text(text = "Rating: ${movie.rating}")
+                    Text(text = "Год")
+                    Text(text = "Рейтинг:")
+                }
+            }
+
+
+            //Вместо этого блока, нужно подставить функцию для вывода картинки по ссылке ( ImageList или ImageLoader тут на выбор для твоего удобства реализации)
+            item {
+                Image(
+//                    painter = painterResource(id = movie.posterResId),
+                    painter = painterResource(id = R.drawable.alexxx),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            item {
+                Text(
+//                    text = movie.description,
+                    text = "описание",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
+            }
+        }
+    }
     @Composable
     fun StartButton() {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ){Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp))
+        {
+            ElevatedButton(
+                onClick = {
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 25.dp, y = 625.dp)
+                    .width(200.dp),
+                content = {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "О приложении"
+                    )
+                }
+
+            )
+            ElevatedButton(
+                onClick = {
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 50.dp, y = 625.dp)
+                    .width(200.dp),
+                content = {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowRight,
+                        contentDescription = "О приложении"
+                    )
+                }
+
+            )
+        }
+        }
         ElevatedButton(
             onClick = { onBackPressed() },
             modifier = Modifier
 
                 .height(50.dp)
-                .offset(x = 0.dp, y = 300.dp)
+                .offset(x = 0.dp, y = 340.dp)
                 .width(200.dp)
 
         ) {
             androidx.compose.material3.Text("Назад")
         }
     }
-    @Composable
-    fun MyScreenContent() {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier
-                        .size(100.dp)
-                        .background(Color.Magenta)
-                ) {
-                    androidx.compose.material3.Text(text = "Button 1")
-                }
-                Button(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier
-                        .size(100.dp)
-                        .background(Color.Magenta)
-                ) {
-                    androidx.compose.material3.Text(text = "Button 2")
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-//                Image(
-//                    painter = painterResource(id = R.drawable.my_image),
-//                    contentDescription = "My Image",
-//                    modifier = Modifier.size(100.dp)
-//                )
-                androidx.compose.material3.Text(
-                    text = "Some text",
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-            androidx.compose.material3.Text(
-                text = "Short description",
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+
+
+
 
 }
-}
+
