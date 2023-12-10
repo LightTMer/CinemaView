@@ -41,6 +41,11 @@ import androidx.compose.ui.res.painterResource
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.TextStyle
@@ -76,6 +81,7 @@ class StartActivity : AppCompatActivity() {
             AppDatabase::class.java, "app-database"
         ).build()
         GlobalScope.launch(Dispatchers.IO) {
+
             var movies: List<MovieEntity> = appDatabase.movieDao().getAllMovies()
             if (!movies.isNotEmpty()) {
                 val okHttpClient = OkHttpClient.Builder()
@@ -147,24 +153,21 @@ class StartActivity : AppCompatActivity() {
 
     @Composable
     fun ImageItem(imageUrl: String) {
-        val painter: Painter =
-            painterResource(id = R.drawable.alexxx) // Placeholder image while loading
-
-        Image(
-            painter = painter,
-//             painter = rememberImagePainter(data = imageUrl),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-        )
+        // Placeholder image while loading
+//        val painter: Painter = rememberImagePainter(data = url)
+//        Image(
+//            painter = painter,
+//
+//            contentDescription = null,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp)
+//        )
     }
 
     @Composable
     fun ImageLoader(item: String) {
-
         val url = item
-
         Image(
             painter = rememberImagePainter(url),
             contentDescription = "car image",
@@ -172,9 +175,13 @@ class StartActivity : AppCompatActivity() {
             modifier = Modifier.size(75.dp)
         )
     }
+
+
     @Composable
     fun MovieDetailsScreen(movies: List<MovieEntity>) {
         val configuration = LocalConfiguration.current
+//        val currentIndex = remember { mutableStateOf(0) }
+        var currentIndex by rememberSaveable { mutableStateOf(0) }
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
 
             LazyColumn(
@@ -182,7 +189,7 @@ class StartActivity : AppCompatActivity() {
             ) {
                 item {
                     Text(
-                        text = movies[0].title,
+                        text = movies[currentIndex].title,
 //                        text = "Название",
                         modifier = Modifier
                             .fillMaxWidth()
@@ -192,36 +199,96 @@ class StartActivity : AppCompatActivity() {
                         textAlign = TextAlign.Center
                     )
                 }
+                item {
+                    val painter: Painter = rememberImagePainter(data = movies[currentIndex].posterUrl)
+                    Image(
+                        painter = painter,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .width(300.dp)
+                            .height(300.dp)
+                            .offset(x = 50.dp)
+                            .padding(end = 5.dp),
+                    )
+                }
 
                 item {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                            .padding(horizontal = 5.dp, vertical = 5.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Год: ${movies[0].releaseDate} ", modifier = Modifier
+                            text = "Год: ${movies[currentIndex].releaseDate} ", modifier = Modifier
                                 .offset(x = 50.dp, y = 0.dp)
                         )
                         Text(
-                            text = "Рейтинг: ${movies[0].rating}", modifier = Modifier
+                            text = "Рейтинг: ${movies[currentIndex].rating}", modifier = Modifier
                                 .offset(x = -50.dp, y = 0.dp)
                         )
                     }
                 }
-
-
                 item {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        )
+                        {
+                            ElevatedButton(
+                                onClick = {
+                                    if (currentIndex > 0) {
+                                        currentIndex--
+                                    }
+                                },
+                                modifier = Modifier
+                                    .width(150.dp)
+                                    .height(50.dp)
+                                    .offset(x = 25.dp, y = 240.dp)
+                                ,
+                                content = {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowLeft,
+                                        contentDescription = "Влево"
+                                    )
+                                }
+
+                            )
+                            ElevatedButton(
+                                onClick = {
+                                    if (currentIndex< movies.size - 1) {
+                                        currentIndex++
+                                    }
+
+                                },
+                                modifier = Modifier
+                                    .width(150.dp)
+                                    .height(50.dp)
+                                    .offset(x = 50.dp, y = 240.dp)
+                                ,
+                                content = {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowRight,
+                                        contentDescription = "Вправо"
+                                    )
+                                }
+
+                            )
+                        }
+                    }
 //
                 }
 
                 item {
                     Text(
-                        text = movies[0].overview,
+                        text = movies[currentIndex].overview,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(8.dp)
+
                     )
                 }
             }
@@ -236,43 +303,60 @@ class StartActivity : AppCompatActivity() {
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val painter: Painter = rememberImagePainter(data = movies[currentIndex].posterUrl)
                     Image(
+
 //                    painter = painterResource(id = movie.posterResId),
-                        painter = painterResource(id = R.drawable.alexxx),
+                        painter =  painter,
                         contentDescription = null,
                         modifier = Modifier
                             .width(150.dp)
                             .height(200.dp)
-                            .padding(end = 16.dp),
+                            .padding(end = 16.dp)
+                            .offset( y = 10.dp),
                         contentScale = ContentScale.Crop
                     )
                     Column {
                         Text(
 //                        text = movie.title,
-                            text = "Название",
-                            modifier = Modifier.padding(bottom = 120.dp),
+                            text = movies[currentIndex].title,
+//                            text = "Название",
+                            modifier = Modifier.padding(bottom =50.dp),
                             color = Color.Black,
                             fontSize = 24.sp,
                             textAlign = TextAlign.Center
                         )
                         Text(
 //                text = movie.description,
-                            text = "вторая страница",
+                            text = movies[currentIndex].overview,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .offset(x = 5.dp, y = -100.dp)
-//                                .padding(16.dp)
+                                .offset(x = 5.dp, y = -30.dp)
+//                                .padding(20.dp)
                         )
 
                     }
                 }
-                Text(text = "Year: movie.year")
-                Text(text = "Rating:movie.rating")
 
+                Text(text = "Год: ${movies[currentIndex].releaseDate}",
+                    modifier = Modifier
+                        .padding(start = 15.dp)
+                        .offset(y = 5.dp),
+                    fontSize = 18.sp,
 
+                    )
+                Text(text = "Рейтинг: ${movies[currentIndex].rating}",
+                    modifier = Modifier
+                        .padding(start = 15.dp)
+                        .offset(y = 5.dp),
+                    fontSize = 18.sp,
+                )
             }
             ElevatedButton(
                 onClick = {
+                    if (currentIndex > 0) {
+                        currentIndex--
+                    }
                 },
                 modifier = Modifier
                     .width(150.dp)
@@ -289,6 +373,9 @@ class StartActivity : AppCompatActivity() {
             )
             ElevatedButton(
                 onClick = {
+                    if (currentIndex< movies.size - 1) {
+                        currentIndex++
+                    }
                 },
                 modifier = Modifier
                     .width(150.dp)
@@ -320,49 +407,7 @@ class StartActivity : AppCompatActivity() {
 
     @Composable
     fun StartButton() {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            )
-            {
-                ElevatedButton(
-                    onClick = {
-                    },
-                    modifier = Modifier
-                        .width(150.dp)
-                        .height(50.dp)
-                        .offset(x = 25.dp, y = 625.dp)
-                        .width(200.dp),
-                    content = {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowLeft,
-                            contentDescription = "Влево"
-                        )
-                    }
 
-                )
-                ElevatedButton(
-                    onClick = {
-
-                    },
-                    modifier = Modifier
-                        .width(150.dp)
-                        .height(50.dp)
-                        .offset(x = 50.dp, y = 625.dp)
-                        .width(200.dp),
-                    content = {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "Вправо"
-                        )
-                    }
-
-                )
-            }
-        }
         ElevatedButton(
             onClick = { onBackPressed() },
             modifier = Modifier
