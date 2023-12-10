@@ -1,14 +1,11 @@
 package com.example.cinemaview
 
-
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,12 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.ElevatedButton
@@ -35,31 +30,23 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 
 import androidx.room.Room
-import coil.imageLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -81,7 +68,6 @@ class StartActivity : AppCompatActivity() {
             AppDatabase::class.java, "app-database"
         ).build()
         GlobalScope.launch(Dispatchers.IO) {
-
             var movies: List<MovieEntity> = appDatabase.movieDao().getAllMovies()
             if (!movies.isNotEmpty()) {
                 val okHttpClient = OkHttpClient.Builder()
@@ -133,54 +119,15 @@ class StartActivity : AppCompatActivity() {
         }
     }
 
-
     private fun showError() {
         runOnUiThread {
             Toast.makeText(this, "Не удалось загрузить", Toast.LENGTH_SHORT).show()
         }
     }
 
-
-
-    @Composable
-    fun ImageList(images: List<String>) {
-        LazyColumn {
-            items(images) { imageUrl ->
-                ImageItem(imageUrl = imageUrl)
-            }
-        }
-    }
-
-    @Composable
-    fun ImageItem(imageUrl: String) {
-        // Placeholder image while loading
-//        val painter: Painter = rememberImagePainter(data = url)
-//        Image(
-//            painter = painter,
-//
-//            contentDescription = null,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp)
-//        )
-    }
-
-    @Composable
-    fun ImageLoader(item: String) {
-        val url = item
-        Image(
-            painter = rememberImagePainter(url),
-            contentDescription = "car image",
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.size(75.dp)
-        )
-    }
-
-
     @Composable
     fun MovieDetailsScreen(movies: List<MovieEntity>) {
         val configuration = LocalConfiguration.current
-//        val currentIndex = remember { mutableStateOf(0) }
         var currentIndex by rememberSaveable { mutableStateOf(0) }
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
 
@@ -190,7 +137,6 @@ class StartActivity : AppCompatActivity() {
                 item {
                     Text(
                         text = movies[currentIndex].title,
-//                        text = "Название",
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(10.dp),
@@ -200,7 +146,8 @@ class StartActivity : AppCompatActivity() {
                     )
                 }
                 item {
-                    val painter: Painter = rememberImagePainter(data = movies[currentIndex].posterUrl)
+                    val painter: Painter =
+                        rememberImagePainter(data = movies[currentIndex].posterUrl)
                     Image(
                         painter = painter,
                         contentDescription = null,
@@ -236,50 +183,39 @@ class StartActivity : AppCompatActivity() {
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        )
-                        {
+                        ) {
                             ElevatedButton(
                                 onClick = {
-                                    if (currentIndex > 0) {
-                                        currentIndex--
-                                    }
+                                    currentIndex = (currentIndex - 1 + movies.size) % movies.size
                                 },
                                 modifier = Modifier
                                     .width(150.dp)
                                     .height(50.dp)
-                                    .offset(x = 25.dp, y = 240.dp)
-                                ,
+                                    .offset(x = 25.dp, y = 240.dp),
                                 content = {
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowLeft,
                                         contentDescription = "Влево"
                                     )
                                 }
-
                             )
                             ElevatedButton(
                                 onClick = {
-                                    if (currentIndex< movies.size - 1) {
-                                        currentIndex++
-                                    }
-
+                                    currentIndex = (currentIndex + 1) % movies.size
                                 },
                                 modifier = Modifier
                                     .width(150.dp)
                                     .height(50.dp)
-                                    .offset(x = 50.dp, y = 240.dp)
-                                ,
+                                    .offset(x = 50.dp, y = 240.dp),
                                 content = {
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowRight,
                                         contentDescription = "Вправо"
                                     )
                                 }
-
                             )
                         }
                     }
-//
                 }
 
                 item {
@@ -303,49 +239,46 @@ class StartActivity : AppCompatActivity() {
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val painter: Painter = rememberImagePainter(data = movies[currentIndex].posterUrl)
+                    val painter: Painter =
+                        rememberImagePainter(data = movies[currentIndex].posterUrl)
                     Image(
-
-//                    painter = painterResource(id = movie.posterResId),
-                        painter =  painter,
+                        painter = painter,
                         contentDescription = null,
                         modifier = Modifier
                             .width(150.dp)
                             .height(200.dp)
                             .padding(end = 16.dp)
-                            .offset( y = 10.dp),
+                            .offset(y = 10.dp),
                         contentScale = ContentScale.Crop
                     )
                     Column {
                         Text(
-//                        text = movie.title,
                             text = movies[currentIndex].title,
-//                            text = "Название",
-                            modifier = Modifier.padding(bottom =50.dp),
+                            modifier = Modifier.padding(bottom = 50.dp),
                             color = Color.Black,
                             fontSize = 24.sp,
                             textAlign = TextAlign.Center
                         )
                         Text(
-//                text = movie.description,
                             text = movies[currentIndex].overview,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .offset(x = 5.dp, y = -30.dp)
-//                                .padding(20.dp)
                         )
 
                     }
                 }
 
-                Text(text = "Год: ${movies[currentIndex].releaseDate}",
+                Text(
+                    text = "Год: ${movies[currentIndex].releaseDate}",
                     modifier = Modifier
                         .padding(start = 15.dp)
                         .offset(y = 5.dp),
                     fontSize = 18.sp,
 
                     )
-                Text(text = "Рейтинг: ${movies[currentIndex].rating}",
+                Text(
+                    text = "Рейтинг: ${movies[currentIndex].rating}",
                     modifier = Modifier
                         .padding(start = 15.dp)
                         .offset(y = 5.dp),
@@ -354,9 +287,7 @@ class StartActivity : AppCompatActivity() {
             }
             ElevatedButton(
                 onClick = {
-                    if (currentIndex > 0) {
-                        currentIndex--
-                    }
+                    currentIndex = (currentIndex - 1 + movies.size) % movies.size
                 },
                 modifier = Modifier
                     .width(150.dp)
@@ -366,16 +297,14 @@ class StartActivity : AppCompatActivity() {
                 content = {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "О приложении"
+                        contentDescription = "Влево"
                     )
                 }
 
             )
             ElevatedButton(
                 onClick = {
-                    if (currentIndex< movies.size - 1) {
-                        currentIndex++
-                    }
+                    currentIndex = (currentIndex + 1) % movies.size
                 },
                 modifier = Modifier
                     .width(150.dp)
@@ -385,7 +314,7 @@ class StartActivity : AppCompatActivity() {
                 content = {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "О приложении"
+                        contentDescription = "Вправо"
                     )
                 }
 
@@ -421,4 +350,3 @@ class StartActivity : AppCompatActivity() {
         }
     }
 }
-

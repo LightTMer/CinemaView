@@ -35,7 +35,6 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 class MainActivity : AppCompatActivity() {
     lateinit var composeView: ComposeView
-//    lateinit var openButton: Button
 
     val brush = Brush.linearGradient(colors = listOf(Color.Blue, Color.Green) )
     @SuppressLint("MissingInflatedId")
@@ -90,7 +89,6 @@ class MainActivity : AppCompatActivity() {
                     append("\uD83C\uDFAC")
                 }
             },
-//            modifier = Modifier.clip(CircleShape).background(color = Color.White)
             )}
         else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
