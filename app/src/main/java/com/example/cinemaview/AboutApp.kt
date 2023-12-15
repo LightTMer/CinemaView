@@ -1,8 +1,10 @@
 package com.example.cinemaview
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.drawable.AnimationDrawable
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.LinearLayout
@@ -112,7 +114,9 @@ class AboutApp : AppCompatActivity() {
                 )
                 ElevatedButton(
 
-                    onClick = { },
+                    onClick = {  val url = "https://github.com/LightTMer/CinemaView"
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)},
                     modifier = Modifier
 
                         .height(50.dp)
@@ -126,7 +130,7 @@ class AboutApp : AppCompatActivity() {
                     modifier = Modifier
 
                         .height(50.dp)
-                        .offset(x = 0.dp, y = 120.dp)
+                        .offset(x = 0.dp, y = 70.dp)
                         .width(200.dp)
 
                 ) {
@@ -176,15 +180,18 @@ class AboutApp : AppCompatActivity() {
                     )
                 }
                 Text(
-                    modifier = Modifier.padding(vertical = 3.dp),
+                    modifier = Modifier.padding(vertical = 3.dp) .offset(x = 0.dp, y = -10.dp),
                     text = "CinemaView - это приложение, которое представляет собой сборник информации о разных фильмах, c их описанием и мировым рейтингом. По сути, это своего рода энциклопедия в мире кино!"
                 )
                 ElevatedButton(
-                    onClick = { },
+                    onClick = {    val url = "https://github.com/LightTMer/CinemaView"
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                    },
                     modifier = Modifier
                         .width(200.dp)
                         .height(40.dp)
-                        .offset(x = 0.dp, y = 0.dp)
+                        .offset(x = 0.dp, y = -5.dp)
                 ) {
                     Text("Перейти на Github")
                 }
@@ -195,7 +202,7 @@ class AboutApp : AppCompatActivity() {
                     modifier = Modifier
                         .width(200.dp)
                         .height(40.dp)
-                        .offset(x = 0.dp, y = 5.dp)
+                        .offset(x = 0.dp, y = -2.dp)
 
                 ) { Text("Назад") }
 

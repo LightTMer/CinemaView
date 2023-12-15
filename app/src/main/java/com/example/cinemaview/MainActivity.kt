@@ -71,24 +71,24 @@ class MainActivity : AppCompatActivity() {
     fun Greeting(text: String) {
         val configuration = LocalConfiguration.current
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    SpanStyle(
-                        brush = brush, alpha = .5f, fontSize = 40.sp,
-                    )
-                ) {
+            Text(
+                buildAnnotatedString {
+                    withStyle(
+                        SpanStyle(
+                            brush = brush, alpha = .5f, fontSize = 40.sp,
+                        )
+                    ) {
 
-                    append("$text")
-                }
-                withStyle(
-                    SpanStyle(
-                        brush = brush, alpha = 1f, fontSize = 40.sp
-                    )
-                ) {
-                    append("\uD83C\uDFAC")
-                }
-            },
+                        append("$text")
+                    }
+                    withStyle(
+                        SpanStyle(
+                            brush = brush, alpha = 1f, fontSize = 40.sp
+                        )
+                    ) {
+                        append("\uD83C\uDFAC")
+                    }
+                },
             )}
         else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
@@ -98,7 +98,7 @@ class MainActivity : AppCompatActivity() {
                     withStyle(
                         SpanStyle(
                             brush = brush, alpha = .5f, fontSize = 40.sp,
-                            )
+                        )
                     ) {
                         append("$text")
                     }
@@ -118,54 +118,54 @@ class MainActivity : AppCompatActivity() {
 
         val configuration = LocalConfiguration.current
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT){
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ){
+            Box(
+                modifier = Modifier.fillMaxSize()
+            ){
+
+            }
+            ElevatedButton(
+                onClick = { onClick()
+                    val intent = Intent(this, StartActivity::class.java)
+                    startActivity(intent)
+                    Toast.makeText(this, "Добро пожаловать в мир кино!", Toast.LENGTH_SHORT).show()} ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 0.dp, y = 60.dp)
+                    .width(200.dp)
+
+            ) {
+                Text("Начать")
+            }
+            ElevatedButton(
+                onClick = { onClick()
+                    val intent = Intent(this, AboutApp::class.java)
+                    startActivity(intent)
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 0.dp, y = 120.dp)
+                    .width(200.dp)
+
+            ) {
+                Text("О приложении")
+            }
+            ElevatedButton(
+                onClick = { onClick()
+                    finish()
+                } ,
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(50.dp)
+                    .offset(x = 0.dp, y = 180.dp)
+                    .width(200.dp)
+
+            ) {
+                Text("Выйти")
+            }
 
         }
-        ElevatedButton(
-            onClick = { onClick()
-                val intent = Intent(this, StartActivity::class.java)
-                startActivity(intent)
-                Toast.makeText(this, "Добро пожаловать в мир кино!", Toast.LENGTH_SHORT).show()} ,
-            modifier = Modifier
-                .width(150.dp)
-                .height(50.dp)
-                .offset(x = 0.dp, y = 60.dp)
-                .width(200.dp)
-
-        ) {
-            Text("Начать")
-        }
-        ElevatedButton(
-            onClick = { onClick()
-                val intent = Intent(this, AboutApp::class.java)
-                startActivity(intent)
-            } ,
-            modifier = Modifier
-                .width(150.dp)
-                .height(50.dp)
-                .offset(x = 0.dp, y = 120.dp)
-                .width(200.dp)
-
-        ) {
-            Text("О приложении")
-        }
-        ElevatedButton(
-            onClick = { onClick()
-                      finish()
-                      } ,
-            modifier = Modifier
-                .width(150.dp)
-                .height(50.dp)
-                .offset(x = 0.dp, y = 180.dp)
-                .width(200.dp)
-
-        ) {
-            Text("Выйти")
-        }
-
-    }
 
         else if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE){
             Box(

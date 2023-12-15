@@ -34,7 +34,7 @@ import androidx.compose.ui.graphics.painter.Painter
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.layout.ContentScale
@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 
 import androidx.room.Room
+import coil.annotation.ExperimentalCoilApi
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -52,12 +54,13 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
+@Suppress("DEPRECATION")
 class StartActivity : AppCompatActivity() {
     private lateinit var appDatabase: AppDatabase
-    lateinit var composeView: ComposeView
+    private lateinit var composeView: ComposeView
 
+    @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("MissingInflatedId")
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,13 +71,15 @@ class StartActivity : AppCompatActivity() {
             AppDatabase::class.java, "app-database"
         ).build()
         GlobalScope.launch(Dispatchers.IO) {
+
             var movies: List<MovieEntity> = appDatabase.movieDao().getAllMovies()
-            if (!movies.isNotEmpty()) {
+            if (movies.isEmpty()) {
                 val okHttpClient = OkHttpClient.Builder()
                     .addInterceptor { chain ->
                         val request = chain.request()
                             .newBuilder()
-                            .addHeader("Accept-Encoding", "gzip")
+                            // gzip включен по умолчанию в okhttp
+                            //.addHeader("Accept-Encoding", "gzip")
                             .build()
                         chain.proceed(request)
                     }
@@ -125,10 +130,11 @@ class StartActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(ExperimentalCoilApi::class)
     @Composable
     fun MovieDetailsScreen(movies: List<MovieEntity>) {
         val configuration = LocalConfiguration.current
-        var currentIndex by rememberSaveable { mutableStateOf(0) }
+        var currentIndex by rememberSaveable { mutableIntStateOf(0) }
         if (configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
 
             LazyColumn(
@@ -172,7 +178,7 @@ class StartActivity : AppCompatActivity() {
                         )
                         Text(
                             text = "Рейтинг: ${movies[currentIndex].rating}", modifier = Modifier
-                                .offset(x = -50.dp, y = 0.dp)
+                                .offset(x = (-50).dp, y = 0.dp)
                         )
                     }
                 }
@@ -191,7 +197,7 @@ class StartActivity : AppCompatActivity() {
                                 modifier = Modifier
                                     .width(150.dp)
                                     .height(50.dp)
-                                    .offset(x = 25.dp, y = 240.dp),
+                                    .offset(x = 25.dp, y = 200.dp),
                                 content = {
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowLeft,
@@ -206,7 +212,7 @@ class StartActivity : AppCompatActivity() {
                                 modifier = Modifier
                                     .width(150.dp)
                                     .height(50.dp)
-                                    .offset(x = 50.dp, y = 240.dp),
+                                    .offset(x = 50.dp, y = 200.dp),
                                 content = {
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowRight,
@@ -224,6 +230,7 @@ class StartActivity : AppCompatActivity() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp)
+                            .offset(y= (-50).dp)
 
                     )
                 }
@@ -263,7 +270,7 @@ class StartActivity : AppCompatActivity() {
                             text = movies[currentIndex].overview,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .offset(x = 5.dp, y = -30.dp)
+                                .offset(x = 5.dp, y = (-30).dp)
                         )
 
                     }
@@ -292,7 +299,7 @@ class StartActivity : AppCompatActivity() {
                 modifier = Modifier
                     .width(150.dp)
                     .height(50.dp)
-                    .offset(x = -200.dp, y = 150.dp)
+                    .offset(x = (-200).dp, y = 130.dp)
                     .width(200.dp),
                 content = {
                     Icon(
@@ -309,7 +316,7 @@ class StartActivity : AppCompatActivity() {
                 modifier = Modifier
                     .width(150.dp)
                     .height(50.dp)
-                    .offset(x = 200.dp, y = 150.dp)
+                    .offset(x = 200.dp, y = 130.dp)
                     .width(200.dp),
                 content = {
                     Icon(
@@ -324,11 +331,11 @@ class StartActivity : AppCompatActivity() {
                 modifier = Modifier
 
                     .height(50.dp)
-                    .offset(x = 0.dp, y = 150.dp)
+                    .offset(x = 0.dp, y = 130.dp)
                     .width(200.dp)
 
             ) {
-                androidx.compose.material3.Text("Назад")
+                Text("Назад")
             }
 
         }
@@ -342,11 +349,11 @@ class StartActivity : AppCompatActivity() {
             modifier = Modifier
 
                 .height(50.dp)
-                .offset(x = 0.dp, y = 340.dp)
+                .offset(x = 0.dp, y = 320.dp)
                 .width(200.dp)
 
         ) {
-            androidx.compose.material3.Text("Назад")
+            Text("Назад")
         }
     }
 }
